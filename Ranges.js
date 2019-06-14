@@ -51,7 +51,8 @@ class Ranges {
         minIndex = -1,
         maxIndex = -1,
         index,
-        upperIndex;
+        upperIndex,
+        deletedIndexes=[];
 
         rangeList.forEach((r, i)=> {
             index = r.indexOf(range[0]);
@@ -60,7 +61,7 @@ class Ranges {
                     minValue: r[0], 
                     maxValue: r[index-1],
                 });
-                minIndex = i;
+                deletedIndexes.push(i);
             }
             upperIndex = r.indexOf(range[r.length > 0 ? 1 : 0])
             if (upperIndex !== -1) {
@@ -68,15 +69,16 @@ class Ranges {
                     minValue: r[upperIndex + 1], 
                     maxValue: r[r.length - 1],
                 });
-                maxIndex = i;
+                deletedIndexes.push(i);
             }
+            
+            if (range[0] < r[0] && r[r.length-1] < range[range.length-1]) {
+                deletedIndexes.push(i);
+            }
+
         });
 
-        minIndex = minIndex !== -1 ? minIndex: maxIndex !== -1 ? maxIndex : rangeList.length;
-
-        maxIndex = maxIndex > minIndex ? maxIndex : minIndex;
-
-        let transitionList = rangeList.filter((r, i) => i < minIndex || i > maxIndex);
+        let transitionList = rangeList.filter((r, i) => deletedIndexes.indexOf(i) === -1);
         values.forEach(value => transitionList.push(this.generateRange([value.minValue, value.maxValue])));
         transitionList = transitionList.sort(this.comparator);
         rangeList = transitionList;
