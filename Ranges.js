@@ -1,90 +1,85 @@
 let rangeList = [];
 class Ranges {
-    
-    comparator = (a, b) => {
-        if (a[a.length-1] < b[b.length-1]) return -1;
-        if (a[a.length-1] > b[b.length-1]) return 1;
-        return 0;
+  comparator = (a, b) => {
+    if (a[a.length - 1] < b[b.length - 1]) return -1;
+    if (a[a.length - 1] > b[b.length - 1]) return 1;
+    return 0;
+  };
+
+  generateRange = (values, filteredIndexes) => {
+    let transitionList = rangeList.filter(
+      (r, i) => filteredIndexes.indexOf(i) === -1
+    );
+    values.forEach(value =>
+      transitionList.push([value.minValue, value.maxValue])
+    );
+    transitionList = transitionList.sort(this.comparator);
+    rangeList = transitionList;
+  };
+
+  add = (range = [10, 20]) => {
+    let minValue = range[0],
+      values = [],
+      index = [],
+      maxValue = range[1];
+
+    rangeList.forEach((r, i) => {
+      if (minValue >= r[0] && minValue <= r[1]) {
+        minValue = r[0];
+        index.push(i);
+      } else if (rangeList[i] && minValue === rangeList[i][1] + 1) {
+        minValue = rangeList[i][0];
+        index.push(i);
       }
-    
-    generateRange = (range = [10, 20]) => {
-        const newRange = [];
-        for (let i = range[0]; i <= range[1]; i++)
-        {
-            newRange.push(i);
-        }
-        return newRange;
-    }
 
-    add = (range = [10, 20]) => {
-        let 
-        minValue = range[0], 
-        index = [],
-        maxValue = range[1];
+      if (maxValue >= r[0] && maxValue <= r[1]) {
+        maxValue = r[1];
+        index.push(i);
+      } else if (rangeList[i] && maxValue === rangeList[i][0] - 1) {
+        maxValue = rangeList[i + 1][1];
+        index.push(i);
+      } else if (rangeList[i] && maxValue === rangeList[i][1] + 1) {
+        index.push(i);
+      }
 
-        rangeList.forEach((r, i)=> {
-            if (r.indexOf(minValue) !== -1 ||  minValue - r[r.length - 1] === 1) {
-                minValue = r[0];
-                index.push(i);
-            } 
-            
-            if (r.indexOf(range[r.length > 0 ? 1 : 0]) !== -1 || r[0] - maxValue === 1) {
-                maxValue = r[r.length - 1];
-                index.push(i);
-            }
+      if (minValue < r[0] && r[1] < maxValue) {
+        index.push(i);
+      }
+    });
+    values.push({ minValue, maxValue });
+    this.generateRange(values, index);
+  };
 
-            if (minValue < r[0] && r[r.length-1] < maxValue) {
-                index.push(i);
-            }
-        }
-        );
+  remove = (range = [5, 6]) => {
+    let values = [],
+      deletedIndexes = [];
 
-        let transitionList = rangeList.filter((r, i) => index.indexOf(i) === -1);
-        transitionList.push(this.generateRange([minValue, maxValue]));
-        transitionList = transitionList.sort(this.comparator);
-        rangeList = transitionList;
-    }
-
-    remove = (range = [5,6]) => {
-        let 
-        values = [],
-        minIndex = -1,
-        maxIndex = -1,
-        index,
-        upperIndex,
-        deletedIndexes=[];
-
-        rangeList.forEach((r, i)=> {
-            index = r.indexOf(range[0]);
-            if (index !== -1) {
-                (r.length > 1 && index !== 0) && values.push({
-                    minValue: r[0], 
-                    maxValue: r[index-1],
-                });
-                deletedIndexes.push(i);
-            }
-            upperIndex = r.indexOf(range[r.length > 0 ? 1 : 0])
-            if (upperIndex !== -1) {
-                (r.length > 1 && upperIndex !== r.length-1) && values.push({
-                    minValue: r[upperIndex + 1], 
-                    maxValue: r[r.length - 1],
-                });
-                deletedIndexes.push(i);
-            }
-            
-            if (range[0] < r[0] && r[r.length-1] < range[range.length-1]) {
-                deletedIndexes.push(i);
-            }
-
+    rangeList.forEach((r, i) => {
+      if (range[0] > r[0] && range[0] <= r[1]) {
+        values.push({
+          minValue: r[0],
+          maxValue: range[0] - 1
         });
+        deletedIndexes.push(i);
+      }
 
-        let transitionList = rangeList.filter((r, i) => deletedIndexes.indexOf(i) === -1);
-        values.forEach(value => transitionList.push(this.generateRange([value.minValue, value.maxValue])));
-        transitionList = transitionList.sort(this.comparator);
-        rangeList = transitionList;
-    }
+      if (range[1] >= r[0] && range[1] < r[1]) {
+        values.push({
+          minValue: range[1] + 1,
+          maxValue: r[1]
+        });
+        deletedIndexes.push(i);
+      }
 
-    print = () => {
-        console.log(rangeList.map(r=> `[${r[0]}, ${r[r.length-1]}]`).join(' '));
-    }
+      if (range[0] <= r[0] && r[1] <= range[1]) {
+        deletedIndexes.push(i);
+      }
+    });
+
+    this.generateRange(values, deletedIndexes);
+  };
+
+  print = () => {
+    console.log(rangeList.map(r => `[${r[0]}, ${r[1]}]`).join(" "));
+  };
 }
