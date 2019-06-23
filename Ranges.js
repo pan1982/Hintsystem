@@ -7,14 +7,13 @@ class Ranges {
   };
 
   generateRange = (values, filteredIndexes) => {
-    let transitionList = rangeList.filter(
-      (r, i) => filteredIndexes.indexOf(i) === -1
-    );
+    
+    rangeList.splice(Math.min(...filteredIndexes), filteredIndexes.length)
+
     values.forEach(value =>
-      transitionList.push([value.minValue, value.maxValue])
+      rangeList.push([value.minValue, value.maxValue])
     );
-    transitionList = transitionList.sort(this.comparator);
-    rangeList = transitionList;
+    rangeList.sort(this.comparator);
   };
 
   add = (range = [10, 20]) => {
@@ -26,23 +25,18 @@ class Ranges {
     rangeList.forEach((r, i) => {
       if (minValue >= r[0] && minValue <= r[1]) {
         minValue = r[0];
-        index.push(i);
       } else if (rangeList[i] && minValue === rangeList[i][1] + 1) {
         minValue = rangeList[i][0];
-        index.push(i);
       }
 
       if (maxValue >= r[0] && maxValue <= r[1]) {
         maxValue = r[1];
-        index.push(i);
       } else if (rangeList[i] && maxValue === rangeList[i][0] - 1) {
         maxValue = rangeList[i + 1][1];
-        index.push(i);
       } else if (rangeList[i] && maxValue === rangeList[i][1] + 1) {
-        index.push(i);
       }
 
-      if (minValue < r[0] && r[1] < maxValue) {
+      if (minValue <= r[0] && r[1] <= maxValue) {
         index.push(i);
       }
     });
